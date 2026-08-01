@@ -17,55 +17,6 @@ The agent is deployed as a **Docker container** to AgentCore Runtime. Images are
  
  ![alt text](image.png)
 
-## How It Works
-
-```mermaid
-graph TB
-    subgraph Input
-        U[User / Browser] -->|Access UI| WAF[AWS WAF<br/>Rate Limiting<br/>Common Attack Protection]
-        WAF -->|Filtered traffic| ALB[Application Load Balancer<br/>+ Optional Cognito Auth]
-        ALB -->|Route to app| ECS[ECS Fargate<br/>Streamlit UI]
-    end
-
-    subgraph UI_Actions[UI Actions]
-        ECS -->|1. Upload Artifacts OR Git URL| S3[Amazon S3<br/>Source Code<br/>Dockerfiles<br/>Docker Compose<br/>Dependency Manifests]
-        ECS -->|1a. Invoke Agent<br/>AWS SDK / IAM SigV4| AC
-    end
-
-    subgraph AC[Amazon Bedrock AgentCore]
-        direction TB
-        RT[AgentCore Runtime<br/>Docker Container<br/>CodeBuild<br/>Strands Agent SDK]
-        MEM[AgentCore Memory<br/>Short-term: Session Context<br/>Long-term: Cross-App Patterns]
-        
-        subgraph TOOLS[In-Process Tools - Strands @tool]
-            T0[clone_repository<br/>Git clone + S3 upload]
-            T1[assess_current_state<br/>Infrastructure inventory<br/>Secrets, Storage, Network, Auth]
-            T2[analyze_source_code<br/>Hardcoded IPs, FS writes<br/>IBM MQ, LDAP, SOAP, APIGEE<br/>OpenShift, Azure, WebSphere]
-            T3[scan_dependencies<br/>Stateful components<br/>DB connections, Libraries]
-            T4[check_eks_compatibility<br/>Dockerfile best practices<br/>Networking, Security, Sizing]
-            T5[generate_migration_plan<br/>Readiness score, Runbook<br/>Target EKS architecture]
-        end
-
-        LLM[Claude on Amazon Bedrock<br/>Extended Thinking + Synthesis]
-        OBS[AgentCore Observability<br/>Traces, Latency, Tokens, Errors]
-    end
-
-    S3 -->|2. Retrieve| RT
-    RT --> MEM
-    RT --> TOOLS
-    TOOLS --> LLM
-    OBS -.->|Monitors| RT
-    OBS -.->|Monitors| LLM
-
-    subgraph Output
-        LLM -->|Persist| DDB[Amazon DynamoDB<br/>Assessment History]
-        LLM -->|Return| ECS
-        ECS -->|Display Report + Chat| U
-    end
-
-    DDB -.->|History| ECS
-```
-
 ## Architecture Workflow
 
 ```mermaid
