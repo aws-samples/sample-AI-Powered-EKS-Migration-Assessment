@@ -145,16 +145,33 @@ cd "${PROJECT_ROOT}"
 set +e  # Don't exit on errors during cleanup
 
 log_info "Cleaning local build artifacts..."
-rm -rf dist/
+rm -rf "${PROJECT_ROOT}/dist/"
 rm -f "${PROJECT_ROOT}/src/agent-source.zip"
 rm -f "${PROJECT_ROOT}/src/ui-source.zip"
 
 log_info "Cleaning Terraform local files..."
+# Production example directory
 rm -f  "${TERRAFORM_DIR}/tfplan"
 rm -rf "${TERRAFORM_DIR}/.terraform"
 rm -f  "${TERRAFORM_DIR}/.terraform.lock.hcl"
 rm -f  "${TERRAFORM_DIR}/terraform.tfstate"
 rm -f  "${TERRAFORM_DIR}/terraform.tfstate.backup"
 rm -f  "${TERRAFORM_DIR}/.terraform.tfstate.lock.info"
+
+# Also clean any terraform state/lock files anywhere in the terraform directory
+find "${PROJECT_ROOT}/terraform" -name ".terraform" -type d -exec rm -rf {} + 2>/dev/null || true
+find "${PROJECT_ROOT}/terraform" -name ".terraform.lock.hcl" -delete 2>/dev/null || true
+find "${PROJECT_ROOT}/terraform" -name "terraform.tfstate" -delete 2>/dev/null || true
+find "${PROJECT_ROOT}/terraform" -name "terraform.tfstate.backup" -delete 2>/dev/null || true
+find "${PROJECT_ROOT}/terraform" -name ".terraform.tfstate.lock.info" -delete 2>/dev/null || true
+find "${PROJECT_ROOT}/terraform" -name "tfplan" -delete 2>/dev/null || true
+
+log_info "Cleaning Python cache files..."
+find "${PROJECT_ROOT}" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+find "${PROJECT_ROOT}" -name "*.pyc" -delete 2>/dev/null || true
+find "${PROJECT_ROOT}" -name "*.pyo" -delete 2>/dev/null || true
+
+log_info "Cleaning misc generated files..."
+find "${PROJECT_ROOT}" -name ".DS_Store" -delete 2>/dev/null || true
 
 log_info "Cleanup complete. All resources destroyed and local files removed."
