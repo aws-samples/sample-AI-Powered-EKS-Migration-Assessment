@@ -303,8 +303,8 @@ acm_certificate_arn = "arn:aws:acm:us-east-1:ACCOUNT:certificate/CERT-ID"
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/ai-powered-eks-migration-assessment-with-bedrock-agentcore.git
-cd ai-powered-eks-migration-assessment-with-bedrock-agentcore
+git clone https://github.com/aws-samples/sample-AI-Powered-EKS-Migration-Assessment.git
+cd sample-AI-Powered-EKS-Migration-Assessment
 
 # Edit the Terraform configuration
 vi terraform/examples/production/terraform.tfvars
