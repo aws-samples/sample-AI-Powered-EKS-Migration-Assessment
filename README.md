@@ -299,28 +299,38 @@ acm_certificate_arn = "arn:aws:acm:us-east-1:ACCOUNT:certificate/CERT-ID"
 
 ## Quick Start
 
-### 1. Configure
+### 1. Clone & Configure
 
 ```bash
-cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+# Clone the repository
+git clone https://github.com/your-org/ai-powered-eks-migration-assessment-with-bedrock-agentcore.git
+cd ai-powered-eks-migration-assessment-with-bedrock-agentcore
+
+# Edit the Terraform configuration
+vi terraform/examples/production/terraform.tfvars
 ```
 
-Edit `terraform/terraform.tfvars`:
+Update `terraform/examples/production/terraform.tfvars` with your values:
 
 ```hcl
-aws_region          = "us-east-1"
-environment         = "dev"
-project_name        = "eks-migration-agent"
-bedrock_model_id    = "us.anthropic.claude-sonnet-4-20250514"
-allowed_cidr_blocks = ["0.0.0.0/0"]  # Restrict to your IP for security
+aws_region               = "us-east-1"
+environment              = "dev"
+project_name             = "eks-migration-agent"    # lowercase, hyphens only, no spaces
+bedrock_model_id         = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+allowed_cidr_blocks      = ["YOUR_IP/32"]           # Replace with your IP from above
+allowed_ipv6_cidr_blocks = []                       # Add your IPv6 if needed
+enable_cognito_auth      = true                     # Set false for quick testing without login
 ```
+
+> **Important:** `project_name` must be lowercase alphanumeric and hyphens only (e.g. `eks-migration-agent`). Spaces, uppercase, or special characters will cause deployment failure.
 
 ### 2. Deploy
 
 ```bash
-chmod +x scripts/deploy.sh
-./scripts/cleanup.sh  # only if re-deploying
-./scripts/deploy.sh
+# Move to scripts folder and run deploy (~10-15 minutes)
+cd scripts
+chmod +x deploy.sh cleanup.sh
+./deploy.sh
 ```
 
 Terraform root is at `terraform/examples/production/`. The deploy script:

@@ -50,6 +50,19 @@ check_prerequisites() {
         log_error "AWS credentials not configured. Run 'aws configure' first."
         exit 1
     fi
+
+    # Validate project_name from tfvars (must be valid for S3 bucket naming)
+    local PROJECT_NAME
+    PROJECT_NAME=$(grep -E '^\s*project_name\s*=' "${TERRAFORM_DIR}/terraform.tfvars" 2>/dev/null | sed 's/.*= *"\([^"]*\)".*/\1/' || echo "")
+    if [ -n "${PROJECT_NAME}" ]; then
+        if ! echo "${PROJECT_NAME}" | grep -qE '^[a-z0-9][a-z0-9\-]{1,40}[a-z0-9]$'; then
+            log_error "Invalid project_name '${PROJECT_NAME}' in terraform.tfvars"
+            log_error "Must be lowercase alphanumeric and hyphens only (3-42 chars), e.g. 'eks-migration-agent'"
+            log_error "No spaces, underscores, or uppercase letters allowed (S3 bucket naming rules)."
+            exit 1
+        fi
+    fi
+
     log_info "All prerequisites met."
 }
 
@@ -59,6 +72,17 @@ check_prerequisites() {
 
 package_and_upload_sources() {
     log_info "Packaging source code..."
+
+    if [ ! -d "${SRC_DIR}/agent" ]; then
+        log_error "Source directory not found: ${SRC_DIR}/agent"
+        log_error "Ensure the repository was cloned completely."
+        exit 1
+    fi
+    if [ ! -d "${SRC_DIR}/ui" ]; then
+        log_error "Source directory not found: ${SRC_DIR}/ui"
+        log_error "Ensure the repository was cloned completely."
+        exit 1
+    fi
 
     # Package agent source
     cd "${SRC_DIR}/agent"
@@ -83,12 +107,18 @@ deploy_infrastructure() {
     terraform init -upgrade -input=false
 
     # Phase 1: Create S3 bucket first (if not already exists)
+    # Storage depends on KMS, so we must target both modules
     local BUCKET
     BUCKET=$(terraform output -raw s3_artifacts_bucket 2>/dev/null || echo "")
     if [ -z "${BUCKET}" ]; then
-        log_info "Phase 1: Creating S3 bucket first..."
-        terraform apply -target=module.storage -auto-approve
+        log_info "Phase 1: Creating KMS + S3 bucket first..."
+        terraform apply -target=module.kms -target=module.storage -auto-approve
         BUCKET=$(terraform output -raw s3_artifacts_bucket)
+        if [ -z "${BUCKET}" ]; then
+            log_error "Failed to create S3 bucket. Check your AWS credentials and project_name value."
+            log_error "project_name must be lowercase alphanumeric and hyphens only (e.g. 'eks-migration-agent')."
+            exit 1
+        fi
         log_info "S3 bucket created: ${BUCKET}"
     fi
 
@@ -119,10 +149,10 @@ deploy_infrastructure() {
     log_info "Forcing ECS new deployment..."
     local CLUSTER SERVICE_NAME AWS_REGION_VAL
     CLUSTER=$(terraform output -raw ecs_cluster_name 2>/dev/null || echo "")
-    AWS_REGION_VAL=$(terraform output -raw 2>/dev/null || echo "${AWS_REGION:-us-east-1}")
+    AWS_REGION_VAL=$(grep -E '^\s*aws_region\s*=' "${TERRAFORM_DIR}/terraform.tfvars" 2>/dev/null | sed 's/.*= *"\([^"]*\)".*/\1/' || echo "${AWS_REGION:-us-east-1}")
     if [ -n "${CLUSTER}" ]; then
         SERVICE_NAME="${CLUSTER%-cluster}-ui"
-        aws ecs update-service --cluster "${CLUSTER}" --service "${SERVICE_NAME}" --force-new-deployment --region us-east-1 >/dev/null 2>&1 || true
+        aws ecs update-service --cluster "${CLUSTER}" --service "${SERVICE_NAME}" --force-new-deployment --region "${AWS_REGION_VAL}" >/dev/null 2>&1 || true
         log_info "ECS service ${SERVICE_NAME} force-deployed."
     fi
 
