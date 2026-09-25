@@ -421,35 +421,6 @@ Recommended EKS Architecture:
 Total Remediation: 17h | Total with EKS Setup: 32h
 ```
 
-## Security Scanning
-
-Run security scans before deploying or submitting for AWS security review:
-
-```bash
-chmod +x scripts/security_scan.sh
-./scripts/security_scan.sh
-```
-
-This runs:
-
-| Tool | What it scans | Install |
-|------|--------------|---------|
-| **Checkov** | Terraform IaC misconfigurations (S3 encryption, IAM policies, SG rules) | `pip install checkov` |
-| **tfsec** | Terraform static analysis (HIGH/CRITICAL severity) | `brew install tfsec` |
-| **Bandit** | Python code security (injection, hardcoded passwords, unsafe functions) | `pip install bandit` |
-| **Safety** | Python dependency CVEs | `pip install safety` |
-| **detect-secrets** | Hardcoded secrets/tokens in source | `pip install detect-secrets` |
-
-For CI/CD, use pre-commit hooks:
-
-```bash
-pip install pre-commit
-pre-commit install
-pre-commit run --all-files
-```
-
-Configuration files: `.checkov.yaml`, `.bandit.yaml`, `.pre-commit-config.yaml`
-
 ## Cleanup
 
 After testing, run the cleanup script to destroy all deployed AWS resources and remove local Terraform files:
@@ -470,30 +441,6 @@ The cleanup script performs the following:
 | 5 | Removes local build artifacts and Terraform state files |
 
 After cleanup, your local workspace is back to a clean state with no leftover state or lock files.
-
-## Cost Estimate
-
-**Per Assessment Cost:**
-
-| Component | Per Assessment |
-|-----------|---------------|
-| Amazon Bedrock (Claude) | $0.15-$0.50 |
-| AgentCore Runtime | $0.02-$0.05 |
-| S3 + DynamoDB | < $0.01 |
-| **Total per assessment** | **$0.18-$0.57** |
-
-**Monthly Infrastructure Cost (always-on):**
-
-| Component | Monthly Cost |
-|-----------|-------------|
-| ECS Fargate (UI, 2 tasks) | ~$30 |
-| Application Load Balancer | ~$20 |
-| NAT Gateway | ~$35 |
-| AWS WAF | ~$6 |
-| CloudWatch Logs | ~$5 |
-| **Total infrastructure** | **~$96/month** |
-
-**vs. Manual Assessment:** 2–3 days / $2,000–$4,000 per app
 
 ## Supported Source Platforms
 
