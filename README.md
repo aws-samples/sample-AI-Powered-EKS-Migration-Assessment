@@ -15,7 +15,8 @@ The agent is deployed as a **Docker container** to AgentCore Runtime. Images are
 
 ## Architeture Diagram 
  
- ![alt text](image.png)
+ <img width="1006" height="511" alt="image" src="https://github.com/user-attachments/assets/ec8dca7e-e500-4d0b-b4da-ad74a27f1c99" />
+
 
 ## Architecture Workflow
 
