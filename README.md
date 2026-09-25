@@ -471,30 +471,6 @@ The cleanup script performs the following:
 
 After cleanup, your local workspace is back to a clean state with no leftover state or lock files.
 
-## Cost Estimate
-
-**Per Assessment Cost:**
-
-| Component | Per Assessment |
-|-----------|---------------|
-| Amazon Bedrock (Claude) | $0.15-$0.50 |
-| AgentCore Runtime | $0.02-$0.05 |
-| S3 + DynamoDB | < $0.01 |
-| **Total per assessment** | **$0.18-$0.57** |
-
-**Monthly Infrastructure Cost (always-on):**
-
-| Component | Monthly Cost |
-|-----------|-------------|
-| ECS Fargate (UI, 2 tasks) | ~$30 |
-| Application Load Balancer | ~$20 |
-| NAT Gateway | ~$35 |
-| AWS WAF | ~$6 |
-| CloudWatch Logs | ~$5 |
-| **Total infrastructure** | **~$96/month** |
-
-**vs. Manual Assessment:** 2–3 days / $2,000–$4,000 per app
-
 ## Supported Source Platforms
 
 This solution assesses applications migrating from **any platform** to Amazon EKS:
