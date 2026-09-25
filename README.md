@@ -421,35 +421,6 @@ Recommended EKS Architecture:
 Total Remediation: 17h | Total with EKS Setup: 32h
 ```
 
-## Security Scanning
-
-Run security scans before deploying or submitting for AWS security review:
-
-```bash
-chmod +x scripts/security_scan.sh
-./scripts/security_scan.sh
-```
-
-This runs:
-
-| Tool | What it scans | Install |
-|------|--------------|---------|
-| **Checkov** | Terraform IaC misconfigurations (S3 encryption, IAM policies, SG rules) | `pip install checkov` |
-| **tfsec** | Terraform static analysis (HIGH/CRITICAL severity) | `brew install tfsec` |
-| **Bandit** | Python code security (injection, hardcoded passwords, unsafe functions) | `pip install bandit` |
-| **Safety** | Python dependency CVEs | `pip install safety` |
-| **detect-secrets** | Hardcoded secrets/tokens in source | `pip install detect-secrets` |
-
-For CI/CD, use pre-commit hooks:
-
-```bash
-pip install pre-commit
-pre-commit install
-pre-commit run --all-files
-```
-
-Configuration files: `.checkov.yaml`, `.bandit.yaml`, `.pre-commit-config.yaml`
-
 ## Cleanup
 
 After testing, run the cleanup script to destroy all deployed AWS resources and remove local Terraform files:
